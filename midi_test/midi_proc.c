@@ -9,6 +9,7 @@
 #include <alsa/asoundlib.h>     /* Interface to the ALSA system */
 #include <pthread.h>
 
+// button light colors
 #define RED_FULL	15
 #define RED_LOW		13
 #define AMBER_FULL	63
