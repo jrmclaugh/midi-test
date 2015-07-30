@@ -513,6 +513,7 @@ void errormessage(const char *format, ...) {
 
 #include <midi_proc.h>
 #include <string.h>
+#include <midi_synth.h>
 
 // function declarations:
 
@@ -527,6 +528,7 @@ int main(int argc, char *argv[]) {
    }
 
    MidiInit((void*)portname);
+   SynthInit();
 
    MidiStartProc((void*)NULL);
 

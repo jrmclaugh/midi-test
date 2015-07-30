@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <alsa/asoundlib.h>     /* Interface to the ALSA system */
 #include <pthread.h>
+#include <midi_proc.h>
+#include <midi_synth.h>
 
 // button light colors
 #define RED_FULL	15
@@ -87,6 +89,9 @@ void *midifunction(void *arg)
 	int status;
 	int byteNum = 0;
 	char outBuffer[3] = {0x90, 0x00, 15};
+	note currentNote;
+
+	printf("midi thread start\n");
 
 	while (1) {
 		if ((status = snd_rawmidi_read(midi->midiin, buffer, 1)) < 0) {
@@ -97,18 +102,17 @@ void *midifunction(void *arg)
 		if(byteNum == 0)
 		{
 			// note
-			outBuffer[1] = buffer[0];
+			outBuffer[1] = currentNote.key = buffer[0];
 			byteNum = 1;
 		}
 		else
 		{
-			if(buffer[0] == 127)
-				outBuffer[2] = NOTE_ON;
+			if(buffer[0] > 0)
+				outBuffer[2] = currentNote.vel = NOTE_ON;
 			else
-				outBuffer[2] = NOTE_OFF;
+				outBuffer[2] = currentNote.vel = NOTE_OFF;
 			byteNum = 0;
 		}
-		printf("Byte: %d \n", (unsigned char)buffer[0]);
 		// after velocity, write
 		if(byteNum == 0)
 		{
@@ -116,7 +120,8 @@ void *midifunction(void *arg)
 				errormessage("Problem writing to MIDI output: %s", snd_strerror(status));
 				exit(1);
 			}
-			printf("Buf: %d %d %d \n", outBuffer[0], outBuffer[1], outBuffer[2]);
+			printf("Note: %d %d %d \n", outBuffer[0], currentNote.key, currentNote.vel);
+			SynthNoteStart(currentNote);
 		}
 		fflush(stdout);
 	}
