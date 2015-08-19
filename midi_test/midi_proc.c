@@ -8,8 +8,9 @@
 #include <stddef.h>
 #include <alsa/asoundlib.h>     /* Interface to the ALSA system */
 #include <pthread.h>
-#include <midi_proc.h>
+#include <midi_def.h>
 #include <midi_synth.h>
+#include <midi_proc.h>
 
 // button light colors
 #define RED_FULL	15

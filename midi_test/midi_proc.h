@@ -8,11 +8,6 @@
 #ifndef MIDI_PROC_H_
 #define MIDI_PROC_H_
 
-typedef struct {
-	char key;
-	char vel;
-} note;
-
 int MidiInit(void *arg);
 int MidiStartProc(void *arg);
 int MidiStopProc(void *arg);

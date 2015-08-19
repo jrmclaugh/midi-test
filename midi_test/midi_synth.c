@@ -7,9 +7,14 @@
 
 #include <unistd.h>
 #include <pthread.h>
-#include <midi_proc.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include <midi_def.h>
+#include <midi_proc.h>
+#include <midi_synth.h>
+//#include <midi_output.h>
 
 #define QUEUESIZE 10
 
@@ -29,12 +34,18 @@ static void noteQueueDel (noteQueue *q, note *out);
 static noteQueue *notes;
 static pthread_t synthThread;
 static void *synthfunction(void *arg);
+static short *outputBuffer;
 
-void SynthInit()
+void SynthInit(short *buffer)
 {
 	notes = noteQueueInit();
+	outputBuffer = buffer;
 	// start thread
 	pthread_create(&synthThread, NULL, synthfunction, NULL);
+
+	//add_sine_wave(outputBuffer, OUT_BUF_SIZE, 440.0f, 44100.0f, 0.5f);
+	//add_sine_wave(outputBuffer, OUT_BUF_SIZE, 392.0f, 44100.0f, 0.5f);
+	//add_sine_wave(outputBuffer, OUT_BUF_SIZE, 349.23f, 44100.0f, 0.5f);
 }
 
 void SynthNoteStart(note key)
@@ -50,18 +61,33 @@ void SynthNoteStart(note key)
 
 }
 
-void SynthNoteStop(note *key)
+void SynthNoteStop(note key)
 {
-	key->vel = 0;
-	noteQueueAdd(notes,key);
+	key.vel = 0;
+	noteQueueAdd(notes, &key);
 }
 
-static void synthUpdateOutput(note newNote)
+void add_sine_wave(int16_t* buffer, int buffer_length, float frequency, float sampling_ratio, float amplitude)
+{
+	int i;
+
+    for (i = 0; i < buffer_length; i++)
+    {
+        float theta = ((float)i / sampling_ratio) * M_PI;
+        // make sure to correct for overflows and underflows
+        buffer[i] += (int16_t)(sin(theta * frequency) * 32767.0f * amplitude);
+    }
+}
+
+static void synthUpdateOutput(int16_t *buf, note newNote)
 {
 	// actual synth work
 	// TODO: need to figure out timing and calculations/tables
-	// TODO: not working, yet (not receiving/printing, move to synthUpdateOutput, pass note)
 	printf("Synth Byte: %d %d\n", (unsigned char)newNote.key, newNote.vel);
+	// clear buffer
+	//memset(buf, 0, sizeof(*buf));
+	// add sine
+	add_sine_wave(buf, OUT_BUF_SIZE, 440.0f, 44100.0f, 0.5f);
 }
 
 static void *synthfunction(void *arg)
@@ -83,7 +109,7 @@ static void *synthfunction(void *arg)
 		// unlock queue
 		pthread_mutex_unlock (notes->mut);
 		// play note (update note(s?) playing?)
-		synthUpdateOutput(newNote);
+		synthUpdateOutput(outputBuffer, newNote);
 		// wait for not full condition
 		pthread_cond_signal (notes->notFull);
 	}

@@ -511,9 +511,11 @@ void errormessage(const char *format, ...) {
 
 #ifdef MIDI_IN_OUT_LIB
 
-#include <midi_proc.h>
 #include <string.h>
+#include <midi_def.h>
+#include <midi_proc.h>
 #include <midi_synth.h>
+#include <midi_output.h>
 
 // function declarations:
 
@@ -522,13 +524,16 @@ void errormessage(const char *format, ...) {
 
 int main(int argc, char *argv[]) {
 
+   short outputBuffer[OUT_BUF_SIZE];
    const char* portname = "hw:1,0,0";  // see alsarawportlist.c example program
+   const char* outname = "hw:0,0,0";
    if ((argc > 1) && (strncmp("hw:", argv[1], 3) == 0)) {
       portname = argv[1];
    }
 
    MidiInit((void*)portname);
-   SynthInit();
+   SynthInit(outputBuffer);
+   OutputInit((void*)outname, outputBuffer);
 
    MidiStartProc((void*)NULL);
 
