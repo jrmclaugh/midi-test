@@ -233,7 +233,8 @@ static void *outputfunction (void *arg)
 			}
 		}
 
-		frames_to_deliver = frames_to_deliver > 4096 ? 4096 : frames_to_deliver;
+		//frames_to_deliver = frames_to_deliver > 4096 ? 4096 : frames_to_deliver;
+		frames_to_deliver = frames_to_deliver > OUT_BUF_SIZE ? OUT_BUF_SIZE : frames_to_deliver;
 
 		/* deliver the data */
 

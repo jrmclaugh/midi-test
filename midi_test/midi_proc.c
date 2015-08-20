@@ -43,6 +43,7 @@ int MidiInit(void *arg)
 	midi.midiin = NULL;
 	midi.midiout = NULL;
 	char resetPad[3] = {0xB0, 0x00, 0x00};
+	char setDrumMapping[3] = {0xB0, 0x00, 0x02};	// configure drum rack layout
 
 	// open in/out
 	if ((status = snd_rawmidi_open(&(midi.midiin), &(midi.midiout), portname, mode)) < 0) {
@@ -52,6 +53,12 @@ int MidiInit(void *arg)
 
 	// reset launchpad (replace with generic reset)
 	if ((status = snd_rawmidi_write(midi.midiout, resetPad, 3)) < 0) {
+		errormessage("Problem writing to MIDI output: %s", snd_strerror(status));
+		exit(1);
+	}
+
+	// reset launchpad (replace with generic reset)
+	if ((status = snd_rawmidi_write(midi.midiout, setDrumMapping, 3)) < 0) {
 		errormessage("Problem writing to MIDI output: %s", snd_strerror(status));
 		exit(1);
 	}

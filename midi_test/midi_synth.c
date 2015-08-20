@@ -15,6 +15,7 @@
 #include <midi_proc.h>
 #include <midi_synth.h>
 //#include <midi_output.h>
+#include <midi_launchpad_notes.h>
 
 #define QUEUESIZE 10
 
@@ -84,10 +85,27 @@ static void synthUpdateOutput(int16_t *buf, note newNote)
 	// actual synth work
 	// TODO: need to figure out timing and calculations/tables
 	printf("Synth Byte: %d %d\n", (unsigned char)newNote.key, newNote.vel);
-	// clear buffer
-	//memset(buf, 0, sizeof(*buf));
+
+	// process new note
+	if(newNote.vel > 0)
+	{
+		// 1. add note to list of notes
+		// 2. add note at velocity to buffer
+	}
+	else
+	{
+		// 1. clear buffer
+		// memset(buf, 0, sizeof(*buf));
+		// 2. remove note from list of notes
+		// 3. reassemble buffer based on still-playing notes
+	}
 	// add sine
-	add_sine_wave(buf, OUT_BUF_SIZE, 440.0f, 44100.0f, 0.5f);
+	//add_sine_wave(buf, OUT_BUF_SIZE, 440.0f, 44100.0f, 0.5f);
+	memset(buf, 0, OUT_BUF_SIZE);
+	if(newNote.vel > 0)
+	{
+		add_sine_wave(buf, OUT_BUF_SIZE, noteArray[newNote.key - NOTE_BASE], 44100.0f, 0.5f);
+	}
 }
 
 static void *synthfunction(void *arg)
